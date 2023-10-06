@@ -1,0 +1,73 @@
+程式作業二-compiler實作 ducument
+一、開發平台與開發環境
+	語言：C / C++
+	開發平台：Windows 11
+	開發環境:Dev-c++ 5.11
+
+二、程式設計:
+	目的:實作出 Franscis compiler,將輸入之資料轉成中間碼並偵測錯誤
+
+	功能:將輸入之原始資料檔轉成中間碼
+
+	設計流程:
+		1.定義各table，將table1、2讀入。
+		2.將輸入之資料取一行切成token。
+		3.判斷最後一個token是否為'；'，若不是則輸出error訊息。
+		4.由第一個token判斷是哪個statement，若不是保留字則為assignment，再根據各文法判斷該statement是否有syntax error。
+		5.再根據各種statement，翻譯出中間碼。
+		6.最後輸出中間碼及error行數到output檔。
+
+	各statement處理:
+		1.program:
+			文法: program id;
+			處理:將id存入id table，並記錄在table內的位置(為變數的scope)
+		2.variable:
+			文法:variable <datatype> : id{,id};
+			中間碼格式:(在id table位置,      ,    ,     )
+			處理:將各個id存入id table，並記錄是在哪個routine被宣告的、dataType，最後產生中間碼。
+		3.dimension:
+			文法:dimension <datatype> : <array>{,<array>};
+			中間碼格式:(在id table位置,      ,    ,     )
+			處理:紀錄陣列名稱、維度、各維度大小在information table，並將array存入id table記錄dataType(=1)，並讓pointer指向information table的位置，最後產生中間碼。
+		4.label:
+			文法:label id{,id};
+			中間碼格式:(在id table位置,      ,    ,     )
+			處理:將各個id存入id table，並記錄是在哪個routine被宣告的、dataType，最後產生中間碼，並記錄此行中間碼位置以處理forward reference，遇到label讓pointer指向。
+		5.gto:
+			文法:gto id;
+			中間碼格式:(gto,      ,    ,  label位置 )
+			處理:	從id table找到label所在位置，產生中間碼，若label 還未紀錄則視為forward reference處理。
+		6.subroutine:
+			文法:subroutine id( <dataType>: id{,id} );
+			處理:將id存入id table，並記錄在table內的位置(為變數的scope)，將變數做variable的處理。
+		7.call:
+			文法:call id( id|real|int {,id|real|int} );
+			中間碼格式:(call, id位置,  , 在information table的位置)
+			處理:將傳遞的參數記錄在information table，並產生中間碼。
+		8.input/output:
+			文法:input|output id{,id};
+			中間碼格式:(input/output,      ,    ,  在id table位置   )
+			處理:將各個id存入id table，並記錄是在哪個routine被宣告的、dataType，最後產生中間碼。
+
+		9.if:
+			文法:if(condition) then ( statement1) { else (statement2) };
+			處理:將此行拆成三個字串，分別為condition、statement1、statement2，statement依照各statement做處理，而條件則進入另外判斷條件的function，最後產生中間碼。
+
+		10.assignment:
+			處理:用reverse polish notation，使用兩個堆疊實作。
+
+	使用到的資料結構:
+		1.identifier table內使用大小為100的陣列，裡面存放id的名字、subroutine、type、pointer。
+		2.quadruple table 使用vector，裡面存放四個int pair存中間碼，還有一個string存該行原始碼。
+		3.information table 使用vector存int，其餘table均使用vector存string。
+		
+	程式運作:
+		1.請使用者輸入欲翻譯之source code的檔名
+		2.程式執行
+		3.輸出檔案到output檔
+
+四、未完成的功能:
+	無
+
+五、心得:
+	這次的compiler比期中的assembler簡單多了，只要依照各statement要做的事做完就好，我處理最久的部分是if，因為if的條件和statement要分開處理，文法分析的部分也要考慮比較多，另外因為打程式的時候還沒有讀過第五章，所以文法分析的部分寫得很複雜，如果當初知道了那些分析方法，程式碼應該會長得比較好。
