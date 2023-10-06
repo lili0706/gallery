@@ -1,0 +1,56 @@
+程式作業一-Assembler實作 ducument
+一、開發平台 與開發環境
+	開發語言：C / C++
+	開發平台：Windows 11
+	IDE：Dev-c++ 5.11
+	實作環境：SIC
+
+二、選擇的組合語言: SIC
+
+
+三、程式設計:
+	目的:實作出 Assembler,將輸入之資料轉成指定輸出格式
+
+	功能:將輸入之原始資料檔轉成機器碼
+
+	設計流程:
+		1.定義各table，以及其會用到的對應function(例如hash)，並設定instruction set
+		2.將輸入之資料切成不同的token
+		3.根據token來決定要放入哪個table，並記錄其token value,並設定其為label、instruction或op，也就是group，同時記錄其指令長度，以計算指令位址，若遇到label就將她的address記錄在symbol table 內，若要紀錄時發現已經定義過了，則判定其為duplicate define。
+		4.根據group的內容判定是否有syntex error或lexical error。
+		5.檢查是否有undefine symbol
+		6.從定義好的單行group中找到instruction，並從instruction set 中找到對應的opcode和format。
+		7.根據instruction的format，翻出機器碼
+		8.若遇到ltorg或end就去定義literal的位址
+
+	使用到的資料結構:
+		1.instruction table內使用struct，分別存放format、instruction、opcode
+		2.pseudo table、reg table、delimiter table、integer table、string table 使用string 陣列
+		3.symbol table 使用struct data 的陣列，struct data內包含symbol及其address
+		struct data{
+			string symbol; // label name
+			string addr; // label 的address
+		};
+		4.新增了第八個table，literal table，用來記錄還沒紀錄address的literal在symbol table中的位置
+		5.struct token_group{ // 單行資訊
+			string label; 
+			string instr;
+			string op1;
+			string op2;
+			int format ; // instruction的格式，用來算指令長度
+			string comment; // 註解
+			bool hascomment; // 這行是否出現註解
+			};
+			這個struct是在group時用到的資料結構，用來儲存一行中的各個資訊
+		
+	程式運作:
+		1.請使用者輸入欲翻譯之source code的檔名
+		2.選擇SIC/XE 或是SIC的組合語言
+		3.程式執行
+		4.輸出檔案到SIC/XE_output.txt或SIC_output.txt
+
+四、未完成的功能:
+	指令EQU的label四則運算(若出現會顯示syntex error)
+
+五、心得:
+	真的好難!雖然我已經選擇了比較簡單的SIC/XE，卻還是感覺力不從心，寫了好久也改了很多次，但感覺還是沒有很完整，很多功能都是後來想到才加上去的，也因為測試的code不夠多所以也無法確定程式是否能正常運作，從一開始的切token到最後的翻機器碼中間還有相當多過程，一開始想說可以邊切token邊把它丟進各個table內，但沒想到還有語法分析的問題，所以又重打了一次程式碼，就這樣改了很多次才產生現在的程式，雖然我沒有完成label 的四則運算，但就這次的作業我還是更加了解了組譯器翻譯的過程。
